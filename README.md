@@ -86,3 +86,29 @@ The code given is structured as follows. Feel free however to modify the structu
 * [Sqlite3](https://sqlite.org/index.html) - Database storage engine
 
 Happy hacking 😁!
+
+### Notes from challenge
+* Fun to start using Kotlin, I've never worked with it before so this is going to be fun! (and you might see some Java traces here and there).
+* Needed to upgrade gradle to be able to build project.
+* _First commit_
+* Started to look into different classes and how Javalin is structured and came across the billingservice and the other classes under core package.
+* The challenge is about to bill on the 1st every month so I thought that the BillingService would act like a scheduler.
+* BillingService should own the logic for two different jobs.
+ ** Monthly billing job which fetches all invoices which are in PENDING state and tries to charge all and if it fails. Sets the status to FAILED. - should run 1st of month at 00:00.
+ ** Retry job which fetches all invoices which are in FAILED state and retries charge these. - should run everyday.
+* Added functionality to InvoiceService to fetch all invoices with given status and updated the DAL accordingly.
+* Added functioanlity to InvoiceService and DAL to update a invoice.
+* _Second commit_
+* Started to write on the JobScheduler, to separate this logic from the BillingService.
+ ** Wanted the jobs to be represented as enums.
+* _Third commit_
+* I realize that we need a FAILED status on the invoice to be handle to handle logic explained above.
+* _Fourth commit_
+* Creates the `init` function. I know for sure that I want to have two scheduled jobs triggered in the init so I start with a failing testcase where I assert that with mockk this has actually happened. In the implementation I am working with the `Calendar` and `Date` classes and separates two different functions separately handling setting up the different jobs. These functions I plan to use after each job has finished also to trigger next run.
+* Implementing and writes tests for `chargeInvoices` function which should take a list of invoices and iterate through them and `charge`. Depending of the outcome it updates the invoice accordingly.
+* Implementing and writing tests for the actual logic of the jobs now is fairly easy when I already have `fetchAllWithStatus` in InvoiceService, charging the invoices and the scheduling done.
+* Extends construction of `BillingService` in `AntaeusApp` with required args.
+* _Fifth commit_ (Too large, I know.. got carried away)
+
+### Improvements
+* The billing/charging should not be in this service. This REST service should only return the invoices related to our customers. If I'd had the chance I would definetely implement this as a AWS Lambda which would be periodically triggered with a Cloudwatch event - so that this REST Service can be scalable to many more nodes when traffic increases. With this implementation we are limited to running a single node.
